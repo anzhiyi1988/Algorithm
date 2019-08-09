@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
 
 def init_random_center(k, row_max, n, data):
     """在元数据中随机获取k个点作为质心"""
@@ -44,31 +46,60 @@ def get_distence(data, k, rows, center):
     return dist_arr
 
 
-def kmcluster(data, k, row, col, threshold):
+def kmeans_run(data, k, row, col, threshold):
     centers = init_random_center(k, row, col, data)
     new_centers = centers
     i = 0
     flag = True
+
     while flag:
         dist_arr = get_distence(data, k, row, new_centers)
         new_centers, axis_x, axis_y, axis_z = get_new_centers(data, k, col, dist_arr)
         print("centers:", centers)
         print("new centers:", new_centers)
 
-        print("centers - new centers:",centers[-k:] - new_centers)
+        print("centers - new centers:", centers[-k:] - new_centers)
         _threshold = np.linalg.norm(centers[-k:] - new_centers)  # 求两个矩阵的范数
 
         i += 1
-        # plt.figure(1)
-        # p = plt.subplot(2, 3, i)
-        # p1, p2, p3 = plt.scatter(axis_x[0], axis_y[0], c='r'), plt.scatter(axis_x[1], axis_y[1], c='g'), plt.scatter(
-        #     axis_x[2], axis_y[2], c='b')
-        # plt.legend(handles=[p1, p2, p3], labels=['0', '1', '2'], loc='best')
-        # p.set_title('Iteration' + str(i))
+
+        # draw2D(axis_x, axis_y, i, new_centers)
+        draw3D(axis_x, axis_y, axis_z, i, new_centers)
 
         if _threshold < threshold:
             flag = False
         else:
             centers = np.concatenate((centers, new_centers), axis=0)
-    # plt.show()
-    return new_centers, axis_x, axis_y, axis_z, centers
+    plt.show()
+
+
+def draw2D(axis_x, axis_y, i, centers):
+    plt.figure(1, [10, 10])  # 10*10英寸的画布
+    p = plt.subplot(3, 3, i)
+    p.set_title('Iteration' + str(i))
+    p1 = p.scatter(axis_x[0], axis_y[0], c='r')
+    p2 = p.scatter(axis_x[1], axis_y[1], c='g')
+    p3 = p.scatter(axis_x[2], axis_y[2], c='b')
+    p.scatter(centers[0, 1], centers[0, 2], c='r', s=550, marker='x')
+    p.scatter(centers[1, 1], centers[1, 2], c='g', s=550, marker='x')
+    p.scatter(centers[2, 1], centers[2, 2], c='b', s=550, marker='x')
+
+    p.legend(handles=[p1, p2, p3], labels=['0', '1', '2'], loc='best')
+
+
+def draw3D(axis_x, axis_y, axis_z, i, centers):
+    plt.figure(2, [14, 10])
+    p = plt.subplot(3, 3, i, projection='3d')
+    p.set_title('3-D scatter' + str(i))
+
+    p.scatter(axis_x[0], axis_y[0], axis_z[0], c='r', s=50)
+    p.scatter(axis_x[1], axis_y[1], axis_z[1], c='g', s=50)
+    p.scatter(axis_x[2], axis_y[2], axis_z[2], c='b', s=50)
+
+    p.scatter(centers[0, 1], centers[0, 2], centers[0, 3], c='black', s=400, marker='x')
+    p.scatter(centers[1, 1], centers[1, 2], centers[1, 3], c='purple', s=400, marker='x')
+    p.scatter(centers[2, 1], centers[2, 2], centers[2, 3], c='yellow', s=400, marker='x')
+
+    p.set_zlabel('Z')  # 坐标轴
+    p.set_ylabel('Y')
+    p.set_xlabel('X')
