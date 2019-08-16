@@ -63,8 +63,8 @@ def kmeans_run(data, k, row, col, threshold):
 
         i += 1
 
-        # draw2D(axis_x, axis_y, i, new_centers)
-        draw3D(axis_x, axis_y, axis_z, i, new_centers)
+        draw2D(axis_x, axis_y, i, new_centers)
+        # draw3D(axis_x, axis_y, axis_z, i, new_centers)
 
         if _threshold < threshold:
             flag = False
