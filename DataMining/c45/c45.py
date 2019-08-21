@@ -1,6 +1,5 @@
 from math import log
 import operator
-import c45.treePlotter
 
 
 def get_category(dd, i):
@@ -14,15 +13,15 @@ def get_category(dd, i):
     return [c[i] for c in dd]
 
 
-def get_attirbute(dd, i):
+def get_column_values(dd, idx):
     """
-    获取数据集的属性列
+    获取一个数据集指定列的所有值
 
-    :param dd:
-    :param i:
-    :return:
+    :param dd:  一个二维数组
+    :param idx:  获取第idx列值
+    :return:  返回一个一维list
     """
-    return [c[i] for c in dd]
+    return [c[idx] for c in dd]
 
 
 def get_entropy(d):
@@ -65,7 +64,7 @@ def get_gain_ratio(dd, ai, ci):
     """
 
     category = get_category(dd, ci)
-    attribute = get_attirbute(dd, ai)
+    attribute = get_column_values(dd, ai)
     unique_attribute = set(attribute)
 
     category_emtropy = get_entropy(category)
@@ -83,15 +82,20 @@ def get_gain_ratio(dd, ai, ci):
     return gain / attribute_entropy
 
 
-def majority_cnt(list):
+def majority_cnt(classList):
     """
-    暂时不描述
-
-    :param list:
-    :return:
+    输入：分类类别列表
+    输出：子节点的分类
+    描述：数据集已经处理了所有属性，但是类标签依然不是唯一的，
+          采用多数判决的方法决定该子节点的分类
     """
-
-    pass
+    classCount = {}
+    for vote in classList:
+        if vote not in classCount.keys():
+            classCount[vote] = 0
+        classCount[vote] += 1
+    sortedClassCount = sorted(classCount.iteritems(), key=operator.itemgetter(1), reversed=True)
+    return sortedClassCount[0][0]
 
 
 def split(data_set, i, feature):
@@ -104,7 +108,7 @@ def split(data_set, i, feature):
     return retDataSet
 
 
-def get_best_feature(dd):
+def get_best_attr_idx(dd):
     """
 
     :param dd:
@@ -113,19 +117,22 @@ def get_best_feature(dd):
 
     attr_num = len(dd[0]) - 1
 
-
     best_gain_ratio = 0.0
     best_attr_idx = -1
 
+    print("计算信息增益比数据：", dd)
     for i in range(attr_num):
-        gain_ratin = get_gain_ratio(dd,i,-1)
+        gain_ratio = get_gain_ratio(dd, i, -1)
 
-        if(gain_ration)
+        print("信息第", i, "列增益比:", gain_ratio)
+
+        if gain_ratio > best_gain_ratio:
+            best_gain_ratio = gain_ratio
+            best_attr_idx = i
+    return best_attr_idx
 
 
-
-
-def create_tree(sample_data, lables):
+def create_tree(sample_data, labels):
     """
     递归构建决策树
 
@@ -138,8 +145,59 @@ def create_tree(sample_data, lables):
 
     # 如果特征都是一样的，没必要决策
     if last_col_list.count(last_col_list[0]) == len(last_col_list):
-        return last_col_list
+        return last_col_list[0]
     if len(sample_data[0]) == 1:
         return majority_cnt(last_col_list)
 
-    best_feat = get_best_feature(sample_data)
+    best_attr_idx = get_best_attr_idx(sample_data)
+
+    best_attr_label = labels[best_attr_idx]
+
+    my_tree = {best_attr_label: {}}
+
+    del (labels[best_attr_idx])
+
+    best_attr_values = [data[best_attr_idx] for data in sample_data]
+
+    unique_values = set(best_attr_values)
+
+    for value in unique_values:
+        sub_labels = labels[:]
+        sub_dd = split(sample_data, best_attr_idx, value)
+        sub_tree = create_tree(sub_dd, sub_labels)
+        print(sub_tree)
+        my_tree[best_attr_label][value] = sub_tree
+        print(my_tree)
+    return my_tree
+
+
+def forecast(row, desicion_tree, labels):
+    """
+    把每一行代入树中
+
+    :param row:
+    :param desicion_tree:
+    :param labels:
+    :return:
+    """
+
+    first_label = list(desicion_tree.keys())[0]
+    sub_tree = desicion_tree[first_label]
+    col_idx = labels.index(first_label)
+
+    r = ""
+
+    for key in sub_tree.keys():
+        if row[col_idx] == key:
+            if type(sub_tree[key]).__name__ == "dict":
+                r = forecast(row, sub_tree[key], labels)
+            else:
+                r = sub_tree[key]
+    return r
+
+
+def forecast_dd(dd, desicion_tree, lables):
+    result = []
+    for row in dd:
+        result.append(forecast(row, desicion_tree, lables))
+    return result
