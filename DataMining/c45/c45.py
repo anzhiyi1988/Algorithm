@@ -82,30 +82,30 @@ def get_gain_ratio(dd, ai, ci):
     return gain / attribute_entropy
 
 
-def majority_cnt(classList):
+def majority_cnt(class_list):
     """
     输入：分类类别列表
     输出：子节点的分类
     描述：数据集已经处理了所有属性，但是类标签依然不是唯一的，
           采用多数判决的方法决定该子节点的分类
     """
-    classCount = {}
-    for vote in classList:
-        if vote not in classCount.keys():
-            classCount[vote] = 0
-        classCount[vote] += 1
-    sortedClassCount = sorted(classCount.iteritems(), key=operator.itemgetter(1), reversed=True)
-    return sortedClassCount[0][0]
+    class_count = {}
+    for vote in class_list:
+        if vote not in class_count.keys():
+            class_count[vote] = 0
+        class_count[vote] += 1
+    sorted_class_count = sorted(class_count.iteritems(), key=operator.itemgetter(1), reversed=True)
+    return sorted_class_count[0][0]
 
 
 def split(data_set, i, feature):
-    retDataSet = []
+    ret_data_set = []
     for featVec in data_set:
         if featVec[i] == feature:
-            reduceFeatVec = featVec[:i]
-            reduceFeatVec.extend(featVec[i + 1:])
-            retDataSet.append(reduceFeatVec)
-    return retDataSet
+            reduce_feat_vec = featVec[:i]
+            reduce_feat_vec.extend(featVec[i + 1:])
+            ret_data_set.append(reduce_feat_vec)
+    return ret_data_set
 
 
 def get_best_attr_idx(dd):
@@ -137,7 +137,7 @@ def create_tree(sample_data, labels):
     递归构建决策树
 
     :param sample_data: 样本数据
-    :param lables: 样本数据标题
+    :param labels: 样本数据标题
     :return:
     """
 
@@ -171,18 +171,18 @@ def create_tree(sample_data, labels):
     return my_tree
 
 
-def forecast(row, desicion_tree, labels):
+def forecast(row, decision_tree, labels):
     """
     把每一行代入树中
 
     :param row:
-    :param desicion_tree:
+    :param decision_tree:
     :param labels:
     :return:
     """
 
-    first_label = list(desicion_tree.keys())[0]
-    sub_tree = desicion_tree[first_label]
+    first_label = list(decision_tree.keys())[0]
+    sub_tree = decision_tree[first_label]
     col_idx = labels.index(first_label)
 
     r = ""
@@ -196,8 +196,8 @@ def forecast(row, desicion_tree, labels):
     return r
 
 
-def forecast_dd(dd, desicion_tree, lables):
+def forecast_dd(dd, decision_tree, lables):
     result = []
     for row in dd:
-        result.append(forecast(row, desicion_tree, lables))
+        result.append(forecast(row, decision_tree, lables))
     return result

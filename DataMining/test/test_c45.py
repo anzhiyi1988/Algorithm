@@ -3,14 +3,14 @@ import c45.data_set as data
 
 import c45.treePlotter as tpo
 
-lables_tmp = data.labels[:]
+labels_tmp = data.labels[:]
 
-desicion_tree = c.create_tree(data.sample_set, lables_tmp)
+decision_tree = c.create_tree(data.sample_set, labels_tmp)
 
-print(desicion_tree)
+print(decision_tree)
 
-tpo.createPlot(desicion_tree)
+tpo.createPlot(decision_tree)
 
-result = c.forecast_dd(data.test_set, desicion_tree, data.labels[:])
+result = c.forecast_dd(data.test_set, decision_tree, data.labels[:])
 
 print(result)
